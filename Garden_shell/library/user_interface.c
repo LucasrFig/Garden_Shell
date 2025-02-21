@@ -24,10 +24,10 @@ void interface_initial_screen(ssd1306_t * ssd, uint * momento,bool * select,bool
     ssd1306_draw_string(ssd,"Aperte B para",10,40);
     ssd1306_draw_string(ssd,"iniciar",35,52);
     ssd1306_send_data(ssd);
-    }else{
-        *momento = 2;
-        *reset = true;
-    }
+}else{
+    *momento = 0;
+    *reset = true;
+}
 
 }
 
@@ -39,25 +39,78 @@ void interface_select_moment(ssd1306_t * ssd, uint * momento, uint *option,bool 
         *option = 1;
     }
     switch(*momento){
+        case 0: interface_set_hour(ssd,momento,option,select,reset,max);
+        break;
+
         case 1: interface_initial_screen(ssd,momento,select,reset);
         break;
         
         case 2: interface_option_screen(ssd,momento,option,select,reset,max);
         break;
-
+        
         case 3: interface_register_input(ssd,momento,option,select,reset,max,atual);
         break;
-
+        
         case 4: interface_select_guardian(ssd,momento,option,select,reset,max,atual);
         break;
-
+        
         case 5: interface_guardian_screen(ssd,momento,option,select,reset,max,atual);
         break;
-
+        
         case 6: interface_register_specie(ssd,momento,option,select,reset,max,atual);
+        break;
+
+        case 7:interface_set_minute(ssd,momento,option,select,reset,max);
         break;
     }
 }
+
+void interface_set_hour(ssd1306_t * ssd, uint * momento, uint *option,bool *select,bool *reset,uint *max){
+    *max = 24;
+    ssd1306_rect(ssd,0,0,127,12,true,false);
+    ssd1306_draw_string(ssd,"Definir hora",3,2);
+    
+    char buffer2[20] = ":00";
+    char buffer1[20];
+    sprintf(buffer1,"%2d",*option - 1);
+    strcat(buffer1,buffer2);
+    ssd1306_draw_string(ssd, &buffer1, 40, 35);
+
+    if(*select){
+        time_now.hour = *option - 1;
+        *momento = 7;//escolher minutos
+        *reset = 1;
+    }
+    ssd1306_send_data(ssd);
+}
+
+void interface_set_minute(ssd1306_t * ssd, uint * momento, uint *option,bool *select,bool *reset,uint *max){
+    *max = 6;
+    ssd1306_rect(ssd,0,0,127,12,true,false);
+    ssd1306_draw_string(ssd,"Definir hora",3,2);
+    
+    char buffer1[20];
+    char buffer2[20];
+    char buffer3[20] ="0";
+    sprintf(buffer1,"%2d:",time_now.hour);
+    sprintf(buffer2,"%d",*option-1);
+    strcat(buffer1,buffer2);
+    strcat(buffer1,buffer3);
+    ssd1306_draw_string(ssd, &buffer1, 40, 35);
+    
+    if(*select){
+        time_now.minutes = (*option - 1)*10;
+        time_now.set_active = true;//Ativa o contador de tempo
+        ssd1306_draw_string(ssd, "hora definida:", 10, 35);
+        ssd1306_draw_string(ssd, &buffer1, 40, 45);
+        ssd1306_send_data(ssd);
+        sleep_ms(1500);
+        *momento = 2;//vai para a tela de opções
+        *reset = 1;
+    }
+    ssd1306_send_data(ssd);
+}
+
 
 void interface_option_screen(ssd1306_t * ssd, uint * momento, uint *option,bool *select,bool *reset, uint *max){
     *max = 2;
@@ -196,9 +249,9 @@ void interface_guardian_screen(ssd1306_t * ssd, uint * momento, uint *option,boo
     strcat(buffer1,buffer2);
     
     ssd1306_rect(ssd,0,0,127,12,true,false);
-    ssd1306_draw_string(ssd,buffer1,3,2);//Escrever título
+    ssd1306_draw_string(ssd,buffer1,3,2);//Escrever nome e entrada do guardião
     
-    //interface_print_data();
+    interface_print_guardian_data(*atual);//envia dados do guardião exibido para o display.
     
     //Apresentar opções
     switch (*option)
@@ -237,4 +290,11 @@ void interface_guardian_screen(ssd1306_t * ssd, uint * momento, uint *option,boo
     }
 
     ssd1306_send_data(ssd);
+}
+
+void interface_print_guardian_data(uint atual){
+    guardiao[atual].entrada.sensor_luz;
+    guardiao[atual].entrada.sensor_temperatura;
+    guardiao[atual].entrada.sensor_umidade;
+    guardiao[atual].rega;
 }

@@ -35,7 +35,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(Garden_shell Garden_shell.c display/ssd1306.c library/user_interface.c library/peripherals.c) 
+add_executable(Garden_shell Garden_shell.c display/ssd1306.c library/user_interface.c library/peripherals.c library/process_data.c) 
 
 pico_set_program_name(Garden_shell "Garden_shell")
 pico_set_program_version(Garden_shell "0.1")

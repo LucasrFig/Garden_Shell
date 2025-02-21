@@ -80,7 +80,7 @@ int main()
     
     //Inicializa portas da entrada 0
     entrada[0].sensor_luz = 13;//led vermelho
-    entrada[0].sensor_temperetura = JOY_Y;//eixo y do joystick
+    entrada[0].sensor_temperatura = JOY_Y;//eixo y do joystick
     entrada[0].sensor_umidade = JOY_X; //eixo x do joystick
 
     //Apresenta ícone e nome do projeto
