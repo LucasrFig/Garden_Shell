@@ -3,7 +3,7 @@
 #include "display/ssd1306.h"
 #include <stdio.h>
 
-#define max_entradas 1
+#define max_entradas 2
 
 
 typedef struct{
@@ -39,8 +39,8 @@ void interface_select_moment(ssd1306_t * ssd, uint * momento, uint *option,bool 
 void interface_option_screen(ssd1306_t * ssd, uint * momento, uint *option,bool *select,bool *reset, uint *max);
 void interface_register_input(ssd1306_t * ssd, uint * momento, uint *option,bool *select,bool *reset, uint *max,uint*atual);
 void interface_register_specie(ssd1306_t * ssd, uint * momento, uint *option,bool *select,bool *reset, uint *max,uint*atual);
-void interface_select_guardian(ssd1306_t * ssd, uint * momento, uint *option,bool *select,bool *reset,uint *max);
-
+void interface_select_guardian(ssd1306_t * ssd, uint * momento, uint *option,bool *select,bool *reset,uint *max,uint*atual);
+void interface_guardian_screen(ssd1306_t * ssd, uint * momento, uint *option,bool *select,bool *reset,uint *max,uint*atual);
 
 
 

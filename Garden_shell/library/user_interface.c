@@ -48,10 +48,13 @@ void interface_select_moment(ssd1306_t * ssd, uint * momento, uint *option,bool 
         case 3: interface_register_input(ssd,momento,option,select,reset,max,atual);
         break;
 
-        case 4: interface_select_guardian(ssd,momento,option,select,reset,max);
+        case 4: interface_select_guardian(ssd,momento,option,select,reset,max,atual);
         break;
 
-        case 7: interface_register_specie(ssd,momento,option,select,reset,max,atual);
+        case 5: interface_guardian_screen(ssd,momento,option,select,reset,max,atual);
+        break;
+
+        case 6: interface_register_specie(ssd,momento,option,select,reset,max,atual);
         break;
     }
 }
@@ -61,9 +64,9 @@ void interface_option_screen(ssd1306_t * ssd, uint * momento, uint *option,bool 
     ssd1306_rect(ssd,0,0,127,12,true,false);
     ssd1306_draw_string(ssd,"Tela inicial",3,2);
     ssd1306_draw_string(ssd,"Registrar",15,16);
-    ssd1306_draw_string(ssd,"guarda",15,28);
+    ssd1306_draw_string(ssd,"guardiao",15,28);
     ssd1306_draw_string(ssd,"Monitorar",15,42);
-    ssd1306_draw_string(ssd,"guardas",15,54);
+    ssd1306_draw_string(ssd,"guardioes",15,54);
     
     switch (*option)
     {
@@ -100,20 +103,23 @@ void interface_register_input(ssd1306_t * ssd, uint * momento, uint *option,bool
     ssd1306_draw_string(ssd, &buffer1, 30, 30);
     ssd1306_draw_string(ssd, "B confirmar:", 3, 53);
     ssd1306_send_data(ssd);
-    
+
     if(*select){
         if(guardiao[*option - 1].active == false){
             guardiao[*option - 1].active = true;
             guardiao[*option - 1].entrada = entrada[*option - 1];
             *atual =  *option - 1;
-            *momento = 7;//Vai selecionar o tipo de planta do guardião
+            *momento = 6;//Vai selecionar o tipo de planta do guardião
             *reset = true;
             
         }else{
             ssd1306_draw_string(ssd,"entrada em uso", 3, 30);
+            ssd1306_send_data(ssd);
             sleep_ms(1000);
+            *select = 0;
         }
     } 
+    
 }
 
 void interface_register_specie(ssd1306_t * ssd, uint * momento, uint *option, bool *select, bool *reset,uint *max,uint*atual) {
@@ -135,28 +141,37 @@ void interface_register_specie(ssd1306_t * ssd, uint * momento, uint *option, bo
     ssd1306_send_data(ssd);
 }
 
-void interface_select_guardian(ssd1306_t * ssd, uint * momento, uint *option,bool *select,bool *reset,uint *max){
+void interface_select_guardian(ssd1306_t * ssd, uint * momento, uint *option,bool *select,bool *reset,uint *max,uint*atual){
     *max = max_entradas+1;
     
     if(guardian_count){//Se houverem guardiões registrados, entra na tela de seleção
         ssd1306_rect(ssd, 0, 0, 127, 12, true, false);
         ssd1306_draw_string(ssd, "Monitoramento", 3, 2);
         ssd1306_draw_string(ssd, "B confirmar:", 3, 53);
+
+        if(!guardiao[*option-1].active){
+            *option+=1;
+        }
+
         if(*option<=max_entradas){//Caso seja uma planta
             char buffer1[20];
             char buffer2[20];
-            strcpy(buffer1,lista_de_especies[(guardiao[*option-1].tipo)]);
-            sprintf(buffer2, ": E%d", *option-1);
-            strcat(buffer1,buffer2);
-            ssd1306_draw_string(ssd, &buffer1, 20, 30);
-        }else{
+                strcpy(buffer1,lista_de_especies[(guardiao[*option-1].tipo)]);
+                sprintf(buffer2, ": E%d", *option-1);
+                strcat(buffer1,buffer2);
+                ssd1306_draw_string(ssd, &buffer1, 20, 30);
+            
+
+        }else{//Caso seja a opção "voltar"
             ssd1306_draw_string(ssd,"Voltar", 20, 30);
         }
+
         if(*select){
             if(*option<=max_entradas){//Caso seja uma planta
                 *momento = 5;
                 *reset = 1;
-            }else{
+                *atual = *option - 1;
+            }else{//Caso seja a opção "voltar"
                 *momento = 2;
                 *reset = 1;
             }
@@ -169,5 +184,57 @@ void interface_select_guardian(ssd1306_t * ssd, uint * momento, uint *option,boo
         *momento = 2;
         *reset = 1;
     }
+    ssd1306_send_data(ssd);
+}
+
+void interface_guardian_screen(ssd1306_t * ssd, uint * momento, uint *option,bool *select,bool *reset,uint *max,uint*atual){
+    *max = 3;
+    char buffer1[20];
+    char buffer2[20];
+    strcpy(buffer1,lista_de_especies[(guardiao[*atual].tipo)]);
+    sprintf(buffer2, ": E%d", *atual);
+    strcat(buffer1,buffer2);
+    
+    ssd1306_rect(ssd,0,0,127,12,true,false);
+    ssd1306_draw_string(ssd,buffer1,3,2);//Escrever título
+    
+    //interface_print_data();
+    
+    //Apresentar opções
+    switch (*option)
+    {
+        case 1://voltar
+            ssd1306_draw_string(ssd,"Voltar",40,55);
+            break;
+        case 2://Regar
+            ssd1306_draw_string(ssd,"Regar",40,55);
+            break;
+        case 3://Excluir
+            ssd1306_draw_string(ssd,"Excluir",40,55);
+            break;
+    }
+
+    //Caso alguma seja selecionada
+    if(*select){
+        switch (*option)
+        {
+            case 1://voltar
+                *momento = 4;
+                *reset = 1;
+                break;
+            case 2://Regar
+                guardiao[*atual].rega = true;
+                *select = 0;
+                break;
+            case 3://Excluir
+                guardiao[*atual].rega = false;
+                guardiao[*atual].active = false;
+                guardian_count --;
+                *momento = 4;
+                *reset = 1;
+                break;
+        }
+    }
+
     ssd1306_send_data(ssd);
 }
