@@ -40,6 +40,7 @@
         "i2c.h": "c",
         "ssd1306.h": "c",
         "font.h": "c",
-        "cstdint": "cpp"
+        "cstdint": "cpp",
+        "stdio.h": "c"
     }
 }

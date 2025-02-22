@@ -6,11 +6,14 @@
 #include "display/font.h"
 #include "library/user_interface.h"
 #include "library/peripherals.h"
+#include "library/process_data.h"
 
 //Definição das macros:
 #define BUT_A 5
 #define BUT_B 6
 #define BUT_J 22//Vai representar um sensor de luminosidade
+
+#define LED_B 12//Controlar bomba d'água
 
 #define JOY_X 27//Vai Representar um sensor de temperatura
 #define JOY_Y 26//Vai Representar um sensor de umidade
@@ -29,7 +32,8 @@ bool reset=false;
 uint max=1;
 uint atual;
 
-
+static input entrada[max_entradas];
+static planta guardiao[max_entradas];
 
 
 
@@ -65,11 +69,17 @@ int main()
     ssd1306_init_config_clean(&ssd, I2C_SCL,I2C_SDA,I2C_PORT,I2C_LINK);
     //Inicializa o ADC para os sensores
     adc_init();
+    adc_gpio_init(JOY_X);
+    adc_gpio_init(JOY_Y);
     //inicializa botões
     gpio_init_button(BUT_A);
     gpio_init_button(BUT_B);
     gpio_init_button(BUT_J);
 
+    //inicializa bomba dágua
+    gpio_init(LED_B);
+    gpio_set_dir(LED_B, GPIO_OUT);
+    
     //Habilita interrupções
     gpio_set_irq_enabled_with_callback(BUT_A, GPIO_IRQ_EDGE_FALL, 1, &interface_irq_handler);
     gpio_set_irq_enabled_with_callback(BUT_B, GPIO_IRQ_EDGE_FALL, 1, &interface_irq_handler);
@@ -79,20 +89,23 @@ int main()
     interface_plant_init(&guardiao);
     
     //Inicializa portas da entrada 0
-    entrada[0].sensor_luz = 13;//led vermelho
     entrada[0].sensor_temperatura = JOY_Y;//eixo y do joystick
     entrada[0].sensor_umidade = JOY_X; //eixo x do joystick
+    entrada[0].bomba_dagua = LED_B;//Led azul
 
     //Apresenta ícone e nome do projeto
     interface_icon(&ssd);
-    sleep_ms(3000);
+    sleep_ms(1000);
 
     
     while (true) {
-        printf("momento:%d\n",momento);
-        printf("select:%d\n",select_op);
-        interface_select_moment(&ssd,&momento,&current_option,&select_op,&reset,&max,&atual);
-        sleep_ms(10);
+        for(uint atual = 0;atual<max_entradas;atual++){
+            process_guardian_data(atual,&guardiao);//atualiza dados dos guardiões/Executa ações de acordo com os valores
+        }
+        //printf("Umidade:%lf||temperatura: %lf\n",guardiao[0].entrada.sensor_umidade,guardiao[0].entrada.sensor_temperatura);//debug
+        sleep_us(10);
+        interface_select_moment(&ssd,&momento,&entrada,&guardiao,&current_option,&select_op,&reset,&max,&atual);//atualiza a interface de interação no display
+        sleep_us(10);
     }
 }
 
