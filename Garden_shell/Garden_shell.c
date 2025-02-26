@@ -6,12 +6,10 @@
 #include "display/font.h"
 #include "library/user_interface.h"
 #include "library/peripherals.h"
-#include "library/process_data.h"
 
 //Definição das macros:
 #define BUT_A 5
 #define BUT_B 6
-#define BUT_J 22//Vai representar um sensor de luminosidade
 
 #define LED_B 12//Controlar bomba d'água
 
@@ -36,28 +34,27 @@ static input entrada[max_entradas];
 static planta guardiao[max_entradas];
 
 
-
+//Interrupção para interação com o display
 static void interface_irq_handler(uint gpio,uint32_t events){
     uint32_t current_time = to_us_since_boot(get_absolute_time());
 
-    if (current_time - last_timeB > 300000){ //debouncing
+    if (current_time - last_timeB > 250000){ //debouncing
         last_timeB = current_time;
         if(gpio==BUT_B){
-            select_op = true;
+            select_op = true;//Seleciona a opção atual
         }
     }
 
-    if (current_time - last_timeA > 300000){ //debouncing
+    if (current_time - last_timeA > 250000){ //debouncing
         last_timeA = current_time;
         if(gpio==BUT_A){
             if(current_option<max){
-                current_option++;
+                current_option++;//Altera a opção selecionada
             }else{
                 current_option = 1;
             }
         }
     }
-
 }
 
 //Função principal
@@ -74,7 +71,6 @@ int main()
     //inicializa botões
     gpio_init_button(BUT_A);
     gpio_init_button(BUT_B);
-    gpio_init_button(BUT_J);
 
     //inicializa bomba dágua
     gpio_init(LED_B);
@@ -83,10 +79,9 @@ int main()
     //Habilita interrupções
     gpio_set_irq_enabled_with_callback(BUT_A, GPIO_IRQ_EDGE_FALL, 1, &interface_irq_handler);
     gpio_set_irq_enabled_with_callback(BUT_B, GPIO_IRQ_EDGE_FALL, 1, &interface_irq_handler);
-    gpio_set_irq_enabled_with_callback(BUT_J, GPIO_IRQ_EDGE_FALL, 1, &interface_irq_handler);
 
     //Inicializa vetor dos guardiões
-    interface_plant_init(&guardiao);
+    interface_plant_init(guardiao);
     
     //Inicializa portas da entrada 0
     entrada[0].sensor_temperatura = JOY_Y;//eixo y do joystick
@@ -95,16 +90,15 @@ int main()
 
     //Apresenta ícone e nome do projeto
     interface_icon(&ssd);
-    sleep_ms(1000);
+    sleep_ms(3000);
 
     
     while (true) {
         for(uint atual = 0;atual<max_entradas;atual++){
-            process_guardian_data(atual,&guardiao);//atualiza dados dos guardiões/Executa ações de acordo com os valores
+            process_guardian_data(atual,guardiao);//atualiza dados dos guardiões/Executa ações de acordo com os valores
         }
-        //printf("Umidade:%lf||temperatura: %lf\n",guardiao[0].entrada.sensor_umidade,guardiao[0].entrada.sensor_temperatura);//debug
         sleep_us(10);
-        interface_select_moment(&ssd,&momento,&entrada,&guardiao,&current_option,&select_op,&reset,&max,&atual);//atualiza a interface de interação no display
+        interface_select_moment(&ssd,&momento,entrada,guardiao,&current_option,&select_op,&reset,&max,&atual);//atualiza a interface de interação no display
         sleep_us(10);
     }
 }

@@ -1,10 +1,9 @@
-#include "process_data.h"
 #include "user_interface.h"
 #include "pico/stdlib.h"
 #include "hardware/adc.h"
 
 void process_guardian_data(uint atual, planta *guardiao){
-    //printf("%d - %s\n",atual,guardiao[atual].active?"guardiao ativo":"guardiao inativo");
+
     if(guardiao[atual].active){//Se o guardião estiver ativo, atualiza os dados, executa os processos
         double aux;
         uint aux2;
@@ -78,8 +77,10 @@ void process_guardian_data(uint atual, planta *guardiao){
                 guardiao[atual].rega = false;//desliga bomba
             }
         }
-        //printf("saida de agua:%d\n",guardiao[atual].entrada.bomba_dagua);//debug
-        //liga ou desliga a bomba de acordo com os dados acima
+
+        //liga ou desliga a bomba do módulo de acordo com os dados acima
         gpio_put(guardiao[atual].entrada.bomba_dagua,guardiao[atual].rega);
+    }else{//Se não estiver ativo, desliga a bomba d'água do módulo caso esteja ligada
+        gpio_put(guardiao[atual].entrada.bomba_dagua,0);
     }
 }

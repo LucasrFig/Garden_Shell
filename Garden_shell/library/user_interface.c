@@ -1,6 +1,5 @@
 #include "user_interface.h"
 #include "display/ssd1306.h"
-#include "process_data.h"
 #include "display/font.h"
 #include <string.h>
 
@@ -41,8 +40,6 @@ void interface_select_moment(ssd1306_t * ssd, uint * momento,input *entrada, pla
         *option = 1;
     }
     switch(*momento){
-        case 0: interface_set_hour(ssd,momento,option,select,reset,max);
-        break;
 
         case 1: interface_initial_screen(ssd,momento,select,reset);
         break;
@@ -62,72 +59,21 @@ void interface_select_moment(ssd1306_t * ssd, uint * momento,input *entrada, pla
         case 6: interface_register_specie(ssd,momento,guardiao,option,select,reset,max,atual);
         break;
 
-        case 7:interface_set_minute(ssd,momento,option,select,reset,max);
-        break;
     }
 }
-
-void interface_set_hour(ssd1306_t * ssd, uint * momento, uint *option,bool *select,bool *reset,uint *max){
-    *max = 24;
-    ssd1306_rect(ssd,0,0,127,12,true,false);
-    ssd1306_draw_string(ssd,"Definir hora",3,2);
-    
-    char buffer2[20] = ":00";
-    char buffer1[20];
-    sprintf(buffer1,"%2d",*option - 1);
-    strcat(buffer1,buffer2);
-    ssd1306_draw_string(ssd, &buffer1, 40, 35);
-
-    if(*select){
-        time_now.hour = *option - 1;
-        *momento = 7;//escolher minutos
-        *reset = 1;
-    }
-    ssd1306_send_data(ssd);
-}
-
-void interface_set_minute(ssd1306_t * ssd, uint * momento, uint *option,bool *select,bool *reset,uint *max){
-    *max = 6;
-    ssd1306_rect(ssd,0,0,127,12,true,false);
-    ssd1306_draw_string(ssd,"Definir hora",3,2);
-    
-    char buffer1[20];
-    char buffer2[20];
-    char buffer3[20] ="0";
-    sprintf(buffer1,"%2d:",time_now.hour);
-    sprintf(buffer2,"%d",*option-1);
-    strcat(buffer1,buffer2);
-    strcat(buffer1,buffer3);
-    ssd1306_draw_string(ssd, &buffer1, 40, 35);
-    
-    if(*select){
-        time_now.minutes = (*option - 1)*10;
-        time_now.set_active = true;//Ativa o contador de tempo
-        ssd1306_draw_string(ssd, "hora definida:", 10, 35);
-        ssd1306_draw_string(ssd, &buffer1, 40, 45);
-        ssd1306_send_data(ssd);
-        sleep_ms(1500);
-        *momento = 2;//vai para a tela de opções
-        *reset = 1;
-    }
-    ssd1306_send_data(ssd);
-}
-
 
 void interface_option_screen(ssd1306_t * ssd, uint * momento, uint *option,bool *select,bool *reset, uint *max){
     *max = 2;
     ssd1306_rect(ssd,0,0,127,12,true,false);
     ssd1306_draw_string(ssd,"Tela inicial",3,2);
-    ssd1306_draw_string(ssd,"Registrar",15,16);
-    ssd1306_draw_string(ssd,"guardiao",15,28);
-    ssd1306_draw_string(ssd,"Monitorar",15,42);
-    ssd1306_draw_string(ssd,"guardioes",15,54);
+    ssd1306_draw_string(ssd,"Novo Guardiao",15,20);
+    ssd1306_draw_string(ssd,"Ver Guardioes",15,32);
     
     switch (*option)
     {
         case 1:
             ssd1306_rect(ssd,20,2,8,8,true,true);
-            ssd1306_rect(ssd,46,2,8,8,true,false);
+            ssd1306_rect(ssd,32,2,8,8,true,false);
             if(*select){
                 * momento = 3;//Vai para tela de "Registrar entrada do guardião"
                 * reset = true;
@@ -135,7 +81,7 @@ void interface_option_screen(ssd1306_t * ssd, uint * momento, uint *option,bool 
         break;
         case 2:
             ssd1306_rect(ssd,20,2,8,8,true,false);
-            ssd1306_rect(ssd,46,2,8,8,true,true);
+            ssd1306_rect(ssd,32,2,8,8,true,true);
             if(*select){
                 * momento = 4;//Vai para tela de "Monitorar guardiões"
                 * reset = true;
@@ -155,7 +101,7 @@ void interface_register_input(ssd1306_t * ssd, uint * momento,input *entrada, pl
     //Imprimir tela
     ssd1306_rect(ssd, 0, 0, 127, 12, true, false);
     ssd1306_draw_string(ssd, "entrada:", 3, 2);
-    ssd1306_draw_string(ssd, &buffer1, 30, 30);
+    ssd1306_draw_string(ssd, buffer1, 30, 30);
     ssd1306_draw_string(ssd, "B confirmar:", 3, 53);
     ssd1306_send_data(ssd);
 
@@ -187,7 +133,7 @@ void interface_register_specie(ssd1306_t * ssd, uint * momento, planta *guardiao
     strcpy(buffer, lista_de_especies[*option - 1]);
     ssd1306_rect(ssd, 0, 0, 127, 12, true, false);
     ssd1306_draw_string(ssd, "especie:", 3, 2);
-    ssd1306_draw_string(ssd, &buffer, 30, 35);
+    ssd1306_draw_string(ssd, buffer, 30, 35);
     
     if(*select){
         guardiao[*atual].tipo = *option - 1;
@@ -219,13 +165,13 @@ void interface_select_guardian(ssd1306_t * ssd, uint * momento, planta *guardiao
             char buffer1[20];
             char buffer2[20];
                 strcpy(buffer1,lista_de_especies[(guardiao[*option-1].tipo)]);
-                sprintf(buffer2, ": E%d", *option-1);
+                sprintf(buffer2, ":E%d", *option-1);
                 strcat(buffer1,buffer2);
-                ssd1306_draw_string(ssd, &buffer1, 20, 30);
+                ssd1306_draw_string(ssd, buffer1, 15, 25);
             
 
         }else{//Caso seja a opção "voltar"
-            ssd1306_draw_string(ssd,"Voltar", 20, 30);
+            ssd1306_draw_string(ssd,"Voltar", 40, 25);
         }
 
         if(*select){
@@ -333,37 +279,36 @@ void interface_especification_init(uint atual, uint tipo, planta *guardiao){
         case 0://suculenta
             guardiao[atual].especificacoes.umidade_min = 20;
             guardiao[atual].especificacoes.temperatura = 30;
-            guardiao[atual].especificacoes.frequencia = 720000000;//720 seg = 10 dias na simulação
-            guardiao[atual].especificacoes.frequencia_quente = 360000000;//360 seg = 5 dias na simulação
+            guardiao[atual].especificacoes.frequencia = 240000000;//240 seg = 10 dias na simulação
+            guardiao[atual].especificacoes.frequencia_quente = 120000000;//120 seg = 5 dias na simulação
         break;
 
         case 1://samambaia
             guardiao[atual].especificacoes.umidade_min = 50;
             guardiao[atual].especificacoes.temperatura = 25;
-            guardiao[atual].especificacoes.frequencia = 144000000;//144 seg = 2 dias na simulação
-            guardiao[atual].especificacoes.frequencia_quente = 72000000;//72 seg = 1 dia na simulação
+            guardiao[atual].especificacoes.frequencia = 48000000;//48 seg = 2 dias na simulação
+            guardiao[atual].especificacoes.frequencia_quente = 24000000;//24 seg = 1 dia na simulação
         break;
 
         case 2://tomateiro
             guardiao[atual].especificacoes.umidade_min = 40;
             guardiao[atual].especificacoes.temperatura = 28;
-            guardiao[atual].especificacoes.frequencia = 144000000;//144 seg = 2 dias na simulação
-            guardiao[atual].especificacoes.frequencia_quente = 72000000;//72 seg = 1 dia na simulação
+            guardiao[atual].especificacoes.frequencia = 48000000;//48 seg = 2 dias na simulação
+            guardiao[atual].especificacoes.frequencia_quente = 24000000;//24 seg = 1 dia na simulação
         break;
 
         case 3://Orquídea
             guardiao[atual].especificacoes.umidade_min = 30;
             guardiao[atual].especificacoes.temperatura = 25;
-            guardiao[atual].especificacoes.frequencia = 360000000;//360 seg = 5 dias na simulação
-            guardiao[atual].especificacoes.frequencia_quente = 180000000;//180 seg = 2.5 dias na simulação
+            guardiao[atual].especificacoes.frequencia = 120000000;//120 seg = 5 dias na simulação
+            guardiao[atual].especificacoes.frequencia_quente = 60000000;//60 seg = 2.5 dias na simulação
         break;
 
         case 4://Hortelã
             guardiao[atual].especificacoes.umidade_min = 50; 
             guardiao[atual].especificacoes.temperatura = 25;
-            guardiao[atual].especificacoes.frequencia = 144000000;//144 seg = 2 dias na simulação
-            guardiao[atual].especificacoes.frequencia_quente = 72000000;//72 seg = 1 dia na simulação
+            guardiao[atual].especificacoes.frequencia = 48000000;//48 seg = 2 dias na simulação
+            guardiao[atual].especificacoes.frequencia_quente = 24000000;//24 seg = 1 dia na simulação
         break;
-    
     }
 }
