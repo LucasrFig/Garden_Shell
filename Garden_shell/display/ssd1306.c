@@ -230,7 +230,7 @@ void ssd1306_draw_full_image(ssd1306_t *ssd, const uint8_t *bitmap)
       for (uint8_t x = 0; x < 128; ++x) {
           uint16_t byte_index = (y * 128 + x) / 8; // Índice do byte no array
           uint8_t bit_index = x % 8; // Posição do bit no byte
-          uint8_t pixel = (bitmap_shell[byte_index] >> (7 - bit_index)) & 1; 
+          uint8_t pixel = (bitmap[byte_index] >> (7 - bit_index)) & 1; 
           
           ssd1306_pixel(ssd, x, y, pixel);
       }

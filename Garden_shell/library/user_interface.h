@@ -50,6 +50,7 @@ void interface_select_moment(ssd1306_t * ssd, uint * momento,input *entrada, pla
 void interface_option_screen(ssd1306_t * ssd, uint * momento, uint *option,bool *select,bool *reset, uint *max);
 void interface_register_input(ssd1306_t * ssd, uint * momento,input *entrada, planta *guardiao, uint *option,bool *select,bool *reset, uint *max,uint*atual);
 void interface_register_specie(ssd1306_t * ssd, uint * momento, planta *guardiao, uint *option,bool *select,bool *reset, uint *max,uint*atual);
+void interface_print_especie(ssd1306_t * ssd, uint tipo,uint x,uint y);
 void interface_especification_init(uint atual, uint tipo, planta *guardiao);
 void interface_select_guardian(ssd1306_t * ssd, uint * momento, planta *guardiao, uint *option,bool *select,bool *reset,uint *max,uint*atual);
 void interface_guardian_screen(ssd1306_t * ssd, uint * momento, planta *guardiao, uint *option,bool *select,bool *reset,uint *max,uint*atual);

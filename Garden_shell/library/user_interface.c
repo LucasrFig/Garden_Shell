@@ -100,6 +100,8 @@ void interface_register_input(ssd1306_t * ssd, uint * momento,input *entrada, pl
     strcat(buffer1,buffer2);
     //Imprimir tela
     ssd1306_rect(ssd, 0, 0, 127, 12, true, false);
+    ssd1306_draw_16x16_image(ssd,bitmap_arrow_left_16x16,10,25);
+    ssd1306_draw_16x16_image(ssd,bitmap_arrow_right_16x16,107,25);
     ssd1306_draw_string(ssd, "entrada:", 3, 2);
     ssd1306_draw_string(ssd, buffer1, 30, 30);
     ssd1306_draw_string(ssd, "B confirmar:", 3, 53);
@@ -132,9 +134,13 @@ void interface_register_specie(ssd1306_t * ssd, uint * momento, planta *guardiao
     // Usando strcpy para copiar a string da lista para o buffer
     strcpy(buffer, lista_de_especies[*option - 1]);
     ssd1306_rect(ssd, 0, 0, 127, 12, true, false);
+    ssd1306_draw_16x16_image(ssd,bitmap_arrow_left_16x16,15,35);
+    ssd1306_draw_16x16_image(ssd,bitmap_arrow_right_16x16,95,35);
     ssd1306_draw_string(ssd, "especie:", 3, 2);
-    ssd1306_draw_string(ssd, buffer, 30, 35);
-    
+    ssd1306_draw_string(ssd, buffer, 30, 15);
+
+    interface_print_especie(ssd,*option - 1, 40,22);
+
     if(*select){
         guardiao[*atual].tipo = *option - 1;
         interface_especification_init(*atual,guardiao[*atual].tipo,guardiao);
@@ -220,11 +226,14 @@ void interface_guardian_screen(ssd1306_t * ssd, uint * momento, planta *guardiao
     ssd1306_rect(ssd,20,25,valor_display,10,true,true);
     ssd1306_draw_16x16_image(ssd,bitmap_waterdrop_16x16,0,16);
     ssd1306_draw_16x16_image(ssd,bitmap_PERCENTAGE_16x16,105,18);
+    ssd1306_draw_16x16_image(ssd,bitmap_PERCENTAGE_16x16,105,18);
+    ssd1306_draw_16x16_image(ssd,bitmap_arrow_left_16x16,20,48);
+    ssd1306_draw_16x16_image(ssd,bitmap_arrow_right_16x16,100,48);
+
     sprintf(buffer1,"%d",(int)guardiao[*atual].entrada.sensor_umidade);
     ssd1306_draw_string(ssd,buffer1,90,22);
     
     //Água on/off
-    //printf("bomba ligada:%d\n",guardiao[*atual].rega);//debug
 
     if(guardiao[*atual].rega){
         ssd1306_draw_string(ssd,"agua: ON",50,40);
@@ -239,7 +248,7 @@ void interface_guardian_screen(ssd1306_t * ssd, uint * momento, planta *guardiao
             ssd1306_draw_string(ssd,"Voltar",40,55);
             break;
         case 2://Regar
-            ssd1306_draw_string(ssd,"Regar",40,55);
+            ssd1306_draw_string(ssd,"Regar",45,55);
             break;
         case 3://Excluir
             ssd1306_draw_string(ssd,"Excluir",40,55);
@@ -273,6 +282,31 @@ void interface_guardian_screen(ssd1306_t * ssd, uint * momento, planta *guardiao
     ssd1306_send_data(ssd);
 }
 
+void interface_print_especie(ssd1306_t * ssd, uint tipo,uint x,uint y){
+    switch (tipo)
+    {
+        case 0://suculenta
+            ssd1306_draw_40x40_image(ssd,bitmap_suculenta_40x40,x,y);
+        break;
+
+        case 1://samambaia
+            ssd1306_draw_40x40_image(ssd,bitmap_samambaia_40x40,x,y);
+        break;
+
+        case 2://tomateiro
+            ssd1306_draw_40x40_image(ssd,bitmap_tomateiro_40x40,x,y);
+        break;
+
+        case 3://Orquídea
+            ssd1306_draw_40x40_image(ssd,bitmap_orquidea_40x40,x,y);
+        break;
+
+        case 4://Hortelã
+            ssd1306_draw_40x40_image(ssd,bitmap_hortela_40x40,x,y);
+        break;
+    }
+    ssd1306_send_data(ssd);
+}
 void interface_especification_init(uint atual, uint tipo, planta *guardiao){
     switch (tipo)
     {
